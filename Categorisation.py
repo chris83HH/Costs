@@ -59,7 +59,27 @@ Transactions:
             model="llama3-8b-8192",
         )
 
-        categorized_data = pd.read_json(response.choices[0].message.content)
+        import json
+
+# Clean the LLM output and try parsing it
+raw_ai_response = response.choices[0].message.content.strip()
+
+# Try to extract the JSON from the LLM response (in case it's wrapped in text)
+try:
+    # Attempt to find the JSON part if LLM added explanation or code block markers
+    if "```json" in raw_ai_response:
+        raw_ai_response = raw_ai_response.split("```json")[-1].split("```")[0].strip()
+    elif "```" in raw_ai_response:
+        raw_ai_response = raw_ai_response.split("```")[1].strip()
+
+    parsed_json = json.loads(raw_ai_response)
+    categorized_data = pd.DataFrame(parsed_json)
+
+except Exception as e:
+    st.error("❌ Failed to parse AI response. Here's the raw output for debugging:")
+    st.code(raw_ai_response)
+    st.stop()
+
         st.success("✅ Transactions Categorized")
         st.dataframe(categorized_data)
 
