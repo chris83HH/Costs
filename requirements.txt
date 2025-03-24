@@ -9,3 +9,4 @@ groq
 prophet
 plotly
 xlrd
+openpyxl
